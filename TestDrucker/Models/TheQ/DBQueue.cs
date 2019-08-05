@@ -9,7 +9,13 @@ namespace TestDrucker.Models.TheQ
 {
     public class DBQueue
     {
-        string CS = "Data Source = 192.168.94.119; Initial Catalog = Intrax; User ID = bo_admin; Password =(BatigolC520%11%44)";
+        string CS;
+        string CSTest;
+        public DBQueue(string ConStr, string ConStrTest)
+        {
+            CS = ConStr;
+            CSTest = ConStrTest;
+        }
         public List<TheQueue> GetTheQ()
         {
             List<TheQueue> elements = new List<TheQueue>();
@@ -37,8 +43,8 @@ namespace TestDrucker.Models.TheQ
         public int AddId(string PrinterName, string Filename)
         {
             int rowsAffected = 0;
-            string CS = "Data Source = 192.168.94.5; Initial Catalog = Intrax_Test; User ID = bo_admin; Password =(BatigolC520%11%44)";
-            using (SqlConnection connection = new SqlConnection(CS))
+            
+            using (SqlConnection connection = new SqlConnection(CSTest))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand($"INSERT INTO PrintQueue (PrinterName,Filename,LastStatus,AddedToQueue,LastStatusUpdate,LastStatusDetails) values ('{PrinterName}','{Filename}','AddedToQueue',GETDATE(),GETDATE(),null);SELECT SCOPE_IDENTITY() AS [PrintQueueId]", connection);

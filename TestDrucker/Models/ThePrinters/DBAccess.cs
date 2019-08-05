@@ -9,8 +9,11 @@ namespace TestDrucker.Models.PrinterCanon
 {
     public class DBAccess
     {
-        string CS = "Data Source = 192.168.94.119; Initial Catalog = ServiceDb; User ID = bo_admin; Password =(BatigolC520%11%44)";
-
+        string CS;
+        public DBAccess(string ConStrCon)
+        {
+            CS = ConStrCon;
+        }
         // Get All Data from DeviceConfig
         public List<Printer> GetAllItems ()
         {
@@ -27,7 +30,8 @@ namespace TestDrucker.Models.PrinterCanon
                         printer.Id = Convert.ToString(reader["Id"]);
                         printer.DeviceName = Convert.ToString(reader["DeviceName"]);
                         printer.DeviceIP = Convert.ToString(reader["DeviceIP"]);
-                        printer.DeviceType = Convert.ToString(reader["DeviceSubtype"]);
+                        printer.DeviceType = Convert.ToString(reader["DeviceType"]);
+                        printer.DeviceSubtype = Convert.ToString(reader["DeviceSubtype"]);
                         printer.BranchNo = Convert.ToInt16(reader["BranchNo"]);
                         elements.Add(printer);
                     }
@@ -35,7 +39,6 @@ namespace TestDrucker.Models.PrinterCanon
                 }
             }
         }
-
         // Get the specific printer based on the Filiale using SQL Param
         public List<Printer> GetAllBranchItems(string branchCode)
         {
@@ -63,7 +66,6 @@ namespace TestDrucker.Models.PrinterCanon
                 }
             }
         }
-
         //Get the BranchNo with BranchLocationCode in same Line 
         public List<Branch> GetBranchAndLocation ()
         {

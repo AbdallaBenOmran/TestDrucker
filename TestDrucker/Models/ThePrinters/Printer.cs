@@ -13,6 +13,7 @@ namespace TestDrucker.Models.PrinterCanon
         public string DeviceName { get; set; }
         public string DeviceIP { get; set; }
         public string DeviceType { get; set; }
+        public string DeviceSubtype { get; set; }
         public int BranchNo { get; set; }
     }
 }

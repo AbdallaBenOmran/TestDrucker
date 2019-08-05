@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Parsing;
 using System;
@@ -16,15 +17,20 @@ namespace TestDrucker.Controllers.PrinterCanon
 {
     public class ThePrintersController : Controller
     {
-        DBAccess db = new DBAccess();
-        DBQueue dbQ = new DBQueue();
-        public List<Printer> Printer { get; set; }
+        public readonly IConfiguration _configuration;
+
+        DBAccess db;
+        DBQueue dbQ;
+        public List<Printer> PrinterList { get; set; }
         public List<Branch> valueBranches { get; set; }
         public List<TheQueue> queueList { get; set; }
         public string contentRoot { get; set; }
-        public ThePrintersController(IHostingEnvironment env)
+        public ThePrintersController(IHostingEnvironment env, IConfiguration configuration)
         {
             contentRoot = env.ContentRootPath;
+            _configuration = configuration;
+            dbQ = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
+            db = new DBAccess(_configuration.GetConnectionString("DBAccessCon"));
         }
 
         //GET : // ThePrinters/Index
@@ -39,9 +45,9 @@ namespace TestDrucker.Controllers.PrinterCanon
             }
 
             var selectListPrinter = new List<SelectListItem>();
-            Printer = db.GetAllItems().ToList();
+            PrinterList = db.GetAllItems().ToList();
 
-            foreach (var print in Printer)
+            foreach (var print in PrinterList)
             {
                 selectListPrinter.Add(new SelectListItem(print.DeviceName, print.Id));
             }
@@ -61,8 +67,8 @@ namespace TestDrucker.Controllers.PrinterCanon
         public JsonResult GetPrinters(string branchCode)
         {
             var selectListPrinter = new List<SelectListItem>();
-            Printer = db.GetAllBranchItems(branchCode).ToList();
-            foreach (var print in Printer)
+            PrinterList = db.GetAllBranchItems(branchCode).ToList();
+            foreach (var print in PrinterList)
             {
                 selectListPrinter.Add(new SelectListItem(print.DeviceName, print.DeviceName));
             }
@@ -75,25 +81,17 @@ namespace TestDrucker.Controllers.PrinterCanon
             if (ModelState.IsValid)
             {
                 string folderPath = @"C:\Users\BenOmran\Desktop\savepdf";
-                Printer = db.GetAllItems().ToList();
+                PrinterList = db.GetAllItems().ToList();
 
-                FileStream PdfA4 = new FileStream("Test-A4.pdf", FileMode.Open, FileAccess.Read);
-                FileStream PdfLabel = new FileStream("Test-Label-3,9x7,9-inch.pdf", FileMode.Open, FileAccess.Read);
+                var printer = PrinterList.Single(d => d.DeviceName == PrinterName);
 
-                PdfLoadedDocument loadedDocumentA4 = new PdfLoadedDocument(PdfA4);
-                PdfLoadedDocument loadedDocumentLabel = new PdfLoadedDocument(PdfLabel);
-
-                PdfPageBase pageA4 = loadedDocumentA4.Pages[0];
-                PdfPageBase pageLabel = loadedDocumentLabel.Pages[0];
-
-                MemoryStream stream = new MemoryStream();
-                loadedDocumentA4.Save(stream);
-
-                string extractedTextA4 = pageA4.ExtractText(true);
-                string extractedTextLabel = pageLabel.ExtractText(true);
-
-                if (extractedTextA4.StartsWith("(Kundennummer:)"))
+                if (printer.DeviceType == "Printer" && printer.DeviceSubtype == "A4")
                 {
+                    FileStream PdfA4 = new FileStream("Test-A4.pdf", FileMode.Open, FileAccess.Read);
+                    PdfLoadedDocument loadedDocumentA4 = new PdfLoadedDocument(PdfA4);
+                    MemoryStream stream = new MemoryStream();
+                    loadedDocumentA4.Save(stream);
+
                     var myUniqueFileName = $@"Test-A4_{Guid.NewGuid()}.pdf";
                     using (var file = new FileStream(Path.Combine(folderPath, myUniqueFileName), FileMode.Create, FileAccess.Write))
                     {
@@ -101,8 +99,13 @@ namespace TestDrucker.Controllers.PrinterCanon
                         dbQ.AddId(PrinterName, file.Name);
                     }
                 }
-                else if (extractedTextLabel.StartsWith("Von:Fahrrad-XXL.de"))
+                else if (printer.DeviceType == "Printer" && printer.DeviceSubtype == "Label")
                 {
+                    FileStream PdfLabel = new FileStream("Test-Label-3,9x7,9-inch.pdf", FileMode.Open, FileAccess.Read);
+                    PdfLoadedDocument loadedDocumentLabel = new PdfLoadedDocument(PdfLabel);
+                    MemoryStream stream = new MemoryStream();
+                    loadedDocumentLabel.Save(stream);
+
                     var myUniqueFileName = $@"Test-Label-3,9x7,9-inch_{Guid.NewGuid()}.pdf";
                     using (var file = new FileStream(Path.Combine(folderPath, myUniqueFileName), FileMode.Create, FileAccess.Write))
                     {
@@ -111,6 +114,7 @@ namespace TestDrucker.Controllers.PrinterCanon
                     }
                 }
             }
+
             return RedirectToAction("Index");
         }
         public List<TheQueue> Display()

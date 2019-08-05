@@ -29,6 +29,8 @@ namespace TestDrucker
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
+                //Configuration.GetConnectionString("ServiceDb");
+
             });
 
 
@@ -60,5 +62,6 @@ namespace TestDrucker
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+       
     }
 }
