@@ -1,0 +1,133 @@
+﻿@model TestDrucker.Models.ViewModels.DetailsViewModel
+@{
+    ViewData["Title"] = "Printer Name";
+}
+
+    <div class="container">
+        <h1><i class="fas fa-print"></i>The Printers</h1>
+        <p>
+            <h6>Display the Names and Branches </h6> <br />
+        </p>
+
+        <div class="card text-dark bg-dark mb-0">
+            <div class="card card-body bg-light">
+                <form asp-controller="ThePrinters" asp-action="Index" method="post">
+                    <div class="form-group row">
+                        <label asp-for="BranchAndLocations" class="col-sm-2 col-form-label"></label>
+                        <div class="col-sm-10">
+                            <select asp-for="SelectedBranchLocation" class="custom-select mr-sm-1" id='branchlist' size='1' name='print' required onchange="enableLabel()"
+                                    asp-items="Model.BranchAndLocations">
+                                <option value="0">Please select The Branch</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label asp-for="GetPrinters" class="col-sm-2 col-form-label"></label>
+                        <div class="col-sm-10">
+                            <select asp-for="SelectedPrinters" class="custom-select mr-sm-1" id='printerid' disabled value="Submit" name='PrinterName' required onchange="enableButton()"
+                                    asp-items="Model.GetPrinters">
+                                <option value="0">Please select The Printer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <button type="submit" id="click" disabled value="Submit" class="btn btn-info" asp-action="TestPrinter"><i class="fas fa-check"></i> Testseite drucken </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript">
+
+     function enableLabel()
+    {
+         var selectelem = document.getElementById('branchlist');
+         var btnelem = document.getElementById('printerid');
+         btnelem.disabled = !selectelem.value;
+    }
+
+    // disable and enable the button based upon the Printer
+    function enableButton()
+    {
+        var selectelem = document.getElementById('printerid');
+        var btnelem = document.getElementById('click');
+        btnelem.disabled = !selectelem.value;
+    }
+
+    // Cascading dropdownlist filling the Printer based upon the Branch
+    $(document).ready(function () {
+        $("#branchlist").change(function () {
+            $('#printerid')
+                .find('option')
+                .remove()
+                .end();
+            if ($("#branchlist").val() != 0) {
+               $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetPrinters")',
+                    dataType: 'json',
+                    data: { branchCode: $("#branchlist").val() },
+                   success: function (printers) {
+                        $("#printerid").append('<option value="">Please select The Printer</option>');
+                        $.each(printers, function (i, printer) {
+                            $("#printerid").append('<option value="' + printer.value + '">' + printer.text + '</option>');
+                        });
+                    },
+                    error: function (ex) {
+                        alert('You MUST chose the Filiale.' + ex);
+                    }
+                });
+            }
+            return false;
+        })
+    });
+
+        </script>
+
+        <p>
+            <h6><i class="fas fa-info-circle"></i> The last record</h6>
+        </p>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        Last Status
+                    </th>
+                    <th>
+                        Last Status Details
+                    </th>
+                    <th>
+                        Last Added To Queue
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.GetQueues)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Id)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.LastStatus)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.LastStatusDetails)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AddedToQueue)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
