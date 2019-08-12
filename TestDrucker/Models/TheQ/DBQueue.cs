@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using TestDrucker.Interfaces;
 using TestDrucker.Models.ViewModels;
+
 
 namespace TestDrucker.Models.TheQ
 {
-    public class DBQueue
+    public class DBQueue : ITheQueueRepository
     {
         string CS;
         string CSTest;
@@ -16,7 +19,7 @@ namespace TestDrucker.Models.TheQ
             CS = ConStr;
             CSTest = ConStrTest;
         }
-        public List<TheQueue> GetTheQ()
+        public List<TheQueue> GetTheQueue()
         {
             List<TheQueue> elements = new List<TheQueue>();
             using (SqlConnection connection = new SqlConnection(CS))
@@ -43,12 +46,12 @@ namespace TestDrucker.Models.TheQ
         public int AddId(string PrinterName, string Filename)
         {
             int rowsAffected = 0;
-            
+
             using (SqlConnection connection = new SqlConnection(CSTest))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand($"INSERT INTO PrintQueue (PrinterName,Filename,LastStatus,AddedToQueue,LastStatusUpdate,LastStatusDetails) values ('{PrinterName}','{Filename}','AddedToQueue',GETDATE(),GETDATE(),null);SELECT SCOPE_IDENTITY() AS [PrintQueueId]", connection);
-              
+
                 rowsAffected = command.ExecuteNonQuery();
             }
             return rowsAffected;

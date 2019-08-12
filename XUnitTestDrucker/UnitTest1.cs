@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Configuration;
+using Moq;
 using System;
 using System.Configuration;
 using System.IO;
 using TestDrucker.Controllers.PrinterCanon;
+using TestDrucker.Interfaces;
 using TestDrucker.Models.PrinterCanon;
 using TestDrucker.Models.TheQ;
 using Xunit;
@@ -12,12 +14,13 @@ namespace XUnitTestDrucker
     public class UnitTest1
     {
         public IConfiguration _configuration;
-        DBQueue dbQ;
+        private readonly ITheQueueRepository _queueRepository;
+
 
         public UnitTest1()
         {
             CreateConfiguration();
-            dbQ = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
+            _queueRepository = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
 
         }
 
@@ -32,9 +35,9 @@ namespace XUnitTestDrucker
         [Fact]
         public void Test1()
         {
-            //DBQueue dbQ = new DBQueue();
-            var res = dbQ.AddId("canon", "C");
-            
+            var mock = new Mock<ITheQueueRepository>();
+            mock.Setup(m => m.AddId("printer", "C File")).Returns(1);
+                       
 
         }
     }

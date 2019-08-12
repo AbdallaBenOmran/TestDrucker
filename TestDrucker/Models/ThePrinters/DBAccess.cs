@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using TestDrucker.Interfaces;
 using TestDrucker.Models.ThePrinters;
+using TestDrucker.Models.TheQ;
 
 namespace TestDrucker.Models.PrinterCanon
 {
-    public class DBAccess
+    public class DBAccess : IPrinterRepository
     {
         string CS;
         public DBAccess(string ConStrCon)

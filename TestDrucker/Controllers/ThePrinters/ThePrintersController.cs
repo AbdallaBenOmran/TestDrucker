@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TestDrucker.Interfaces;
 using TestDrucker.Models;
 using TestDrucker.Models.PrinterCanon;
 using TestDrucker.Models.TheQ;
@@ -18,26 +19,31 @@ namespace TestDrucker.Controllers.PrinterCanon
     public class ThePrintersController : Controller
     {
         public readonly IConfiguration _configuration;
+        private readonly ITheQueueRepository _queueRepository;
+        private readonly IPrinterRepository _printerRepository;
 
-        DBAccess db;
-        DBQueue dbQ;
+        //DBAccess db;
+        //DBQueue dbQ;
         public List<Printer> PrinterList { get; set; }
         public List<Branch> valueBranches { get; set; }
         public List<TheQueue> queueList { get; set; }
         public string contentRoot { get; set; }
+
         public ThePrintersController(IHostingEnvironment env, IConfiguration configuration)
         {
             contentRoot = env.ContentRootPath;
             _configuration = configuration;
-            dbQ = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
-            db = new DBAccess(_configuration.GetConnectionString("DBAccessCon"));
+            //dbQ = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
+            //db = new DBAccess(_configuration.GetConnectionString("DBAccessCon"));
+            _queueRepository = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
+            _printerRepository = new DBAccess(_configuration.GetConnectionString("DBAccessCon"));
         }
-
+       
         //GET : // ThePrinters/Index
         public ViewResult Index()
         {
             var selectListBranches = new List<SelectListItem>();
-            valueBranches = db.GetBranchAndLocation().ToList();
+            valueBranches = GetBranchAndLocation().ToList();
 
             foreach (var branch in valueBranches)
             {
@@ -45,29 +51,53 @@ namespace TestDrucker.Controllers.PrinterCanon
             }
 
             var selectListPrinter = new List<SelectListItem>();
-            PrinterList = db.GetAllItems().ToList();
+            PrinterList = GetAllItems().ToList();
 
             foreach (var print in PrinterList)
             {
                 selectListPrinter.Add(new SelectListItem(print.DeviceName, print.Id));
             }
 
-            queueList = dbQ.GetTheQ().ToList();
+            //queueList = dbQ.GetTheQ().ToList();
+            //queueList = dbQ.GetTheQueue().ToList();
+            queueList = GetTheQueue();
             queueList = Display();
 
             var dvm = new DetailsViewModel();
             dvm.BranchAndLocations = selectListBranches;
             dvm.GetPrinters = selectListPrinter;
-            dvm.GetQueues = queueList;
-  
+            //dvm.GetQueues = queueList;
+            dvm.GetQueues = GetTheQueue();
+
             return View(dvm);
+        }
+        public List<TheQueue> GetTheQueue()
+        {
+            return _queueRepository.GetTheQueue();
+        }
+        public int AddId (string PrinterName, string Filename)
+        {
+            return _queueRepository.AddId(PrinterName, Filename);
+        }
+        public List<Printer> GetAllItems()
+        {
+            return _printerRepository.GetAllItems();
+        }
+
+        public List<Printer> GetAllBranchItems(string branchCode)
+        {
+            return _printerRepository.GetAllBranchItems(branchCode);
+        }
+        public List<Branch> GetBranchAndLocation()
+        {
+            return _printerRepository.GetBranchAndLocation();
         }
 
         [HttpPost]
         public JsonResult GetPrinters(string branchCode)
         {
             var selectListPrinter = new List<SelectListItem>();
-            PrinterList = db.GetAllBranchItems(branchCode).ToList();
+            PrinterList = GetAllBranchItems(branchCode).ToList();
             foreach (var print in PrinterList)
             {
                 selectListPrinter.Add(new SelectListItem(print.DeviceName, print.DeviceName));
@@ -81,7 +111,7 @@ namespace TestDrucker.Controllers.PrinterCanon
             if (ModelState.IsValid)
             {
                 string folderPath = @"C:\Users\BenOmran\Desktop\savepdf";
-                PrinterList = db.GetAllItems().ToList();
+                PrinterList = GetAllItems().ToList();
 
                 var printer = PrinterList.Single(d => d.DeviceName == PrinterName);
 
@@ -96,7 +126,7 @@ namespace TestDrucker.Controllers.PrinterCanon
                     using (var file = new FileStream(Path.Combine(folderPath, myUniqueFileName), FileMode.Create, FileAccess.Write))
                     {
                         stream.WriteTo(file);
-                        dbQ.AddId(PrinterName, file.Name);
+                        AddId(PrinterName, file.Name);
                     }
                 }
                 else if (printer.DeviceType == "Printer" && printer.DeviceSubtype == "Label")
@@ -110,13 +140,17 @@ namespace TestDrucker.Controllers.PrinterCanon
                     using (var file = new FileStream(Path.Combine(folderPath, myUniqueFileName), FileMode.Create, FileAccess.Write))
                     {
                         stream.WriteTo(file);
-                        dbQ.AddId(PrinterName, file.Name);
+                        AddId(PrinterName, file.Name);
                     }
                 }
             }
 
             return RedirectToAction("Index");
         }
+        //public List<TheQueue> Display()
+        //{
+        //    return _queueRepository.Display();
+        //}
         public List<TheQueue> Display()
         {
             foreach (var item in queueList)
