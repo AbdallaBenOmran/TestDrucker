@@ -14,13 +14,13 @@ namespace XUnitTestDrucker
     public class UnitTest1
     {
         public IConfiguration _configuration;
-        private readonly ITheQueueRepository _queueRepository;
+        private readonly IQueueRepository _queueRepository;
 
 
         public UnitTest1()
         {
             CreateConfiguration();
-            _queueRepository = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
+            _queueRepository = new DBQueueRepository(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
 
         }
 
@@ -35,8 +35,8 @@ namespace XUnitTestDrucker
         [Fact]
         public void Test1()
         {
-            var mock = new Mock<ITheQueueRepository>();
-            mock.Setup(m => m.AddId("printer", "C File")).Returns(1);
+            var mock = new Mock<IQueueRepository>();
+            mock.Setup(m => m.AddQueue("printer", "C File")).Returns(1);
                        
 
         }

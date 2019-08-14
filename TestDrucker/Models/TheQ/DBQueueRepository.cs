@@ -10,16 +10,16 @@ using TestDrucker.Models.ViewModels;
 
 namespace TestDrucker.Models.TheQ
 {
-    public class DBQueue : ITheQueueRepository
+    public class DBQueueRepository : IQueueRepository
     {
         string CS;
         string CSTest;
-        public DBQueue(string ConStr, string ConStrTest)
+        public DBQueueRepository(string ConStr, string ConStrTest)
         {
             CS = ConStr;
             CSTest = ConStrTest;
         }
-        public List<TheQueue> GetTheQueue()
+        public List<TheQueue> GetQueue()
         {
             List<TheQueue> elements = new List<TheQueue>();
             using (SqlConnection connection = new SqlConnection(CS))
@@ -43,7 +43,7 @@ namespace TestDrucker.Models.TheQ
                 }
             }
         }
-        public int AddId(string PrinterName, string Filename)
+        public int AddQueue(string PrinterName, string Filename)
         {
             int rowsAffected = 0;
 

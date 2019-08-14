@@ -6,10 +6,9 @@ using TestDrucker.Models.TheQ;
 
 namespace TestDrucker.Interfaces
 {
-    public interface ITheQueueRepository
+    public interface IQueueRepository
     {
-        List<TheQueue> GetTheQueue();
-        int AddId(string PrinterName, string Filename );
-        //List<TheQueue> Display();
+        List<TheQueue> GetQueue();
+        int AddQueue(string PrinterName, string Filename );
     }
 }

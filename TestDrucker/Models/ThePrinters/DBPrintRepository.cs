@@ -9,10 +9,10 @@ using TestDrucker.Models.TheQ;
 
 namespace TestDrucker.Models.PrinterCanon
 {
-    public class DBAccess : IPrinterRepository
+    public class DBPrintRepository : IPrinterRepository
     {
         string CS;
-        public DBAccess(string ConStrCon)
+        public DBPrintRepository(string ConStrCon)
         {
             CS = ConStrCon;
         }

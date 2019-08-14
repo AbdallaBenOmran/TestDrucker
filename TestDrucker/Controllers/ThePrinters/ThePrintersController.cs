@@ -19,11 +19,8 @@ namespace TestDrucker.Controllers.PrinterCanon
     public class ThePrintersController : Controller
     {
         public readonly IConfiguration _configuration;
-        private readonly ITheQueueRepository _queueRepository;
+        private readonly IQueueRepository _queueRepository;
         private readonly IPrinterRepository _printerRepository;
-
-        //DBAccess db;
-        //DBQueue dbQ;
         public List<Printer> PrinterList { get; set; }
         public List<Branch> valueBranches { get; set; }
         public List<TheQueue> queueList { get; set; }
@@ -33,10 +30,8 @@ namespace TestDrucker.Controllers.PrinterCanon
         {
             contentRoot = env.ContentRootPath;
             _configuration = configuration;
-            //dbQ = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
-            //db = new DBAccess(_configuration.GetConnectionString("DBAccessCon"));
-            _queueRepository = new DBQueue(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
-            _printerRepository = new DBAccess(_configuration.GetConnectionString("DBAccessCon"));
+            _queueRepository = new DBQueueRepository(_configuration.GetConnectionString("ServiceDbLive"), _configuration.GetConnectionString("ServiceDbTest"));
+            _printerRepository = new DBPrintRepository(_configuration.GetConnectionString("DBAccessCon"));
         }
        
         //GET : // ThePrinters/Index
@@ -57,27 +52,23 @@ namespace TestDrucker.Controllers.PrinterCanon
             {
                 selectListPrinter.Add(new SelectListItem(print.DeviceName, print.Id));
             }
-
-            //queueList = dbQ.GetTheQ().ToList();
-            //queueList = dbQ.GetTheQueue().ToList();
             queueList = GetTheQueue();
             queueList = Display();
 
             var dvm = new DetailsViewModel();
             dvm.BranchAndLocations = selectListBranches;
             dvm.GetPrinters = selectListPrinter;
-            //dvm.GetQueues = queueList;
             dvm.GetQueues = GetTheQueue();
 
             return View(dvm);
         }
         public List<TheQueue> GetTheQueue()
         {
-            return _queueRepository.GetTheQueue();
+            return _queueRepository.GetQueue();
         }
         public int AddId (string PrinterName, string Filename)
         {
-            return _queueRepository.AddId(PrinterName, Filename);
+            return _queueRepository.AddQueue(PrinterName, Filename);
         }
         public List<Printer> GetAllItems()
         {
@@ -144,13 +135,8 @@ namespace TestDrucker.Controllers.PrinterCanon
                     }
                 }
             }
-
             return RedirectToAction("Index");
         }
-        //public List<TheQueue> Display()
-        //{
-        //    return _queueRepository.Display();
-        //}
         public List<TheQueue> Display()
         {
             foreach (var item in queueList)
