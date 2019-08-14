@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Aspose.Pdf.Facades;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
@@ -66,7 +67,7 @@ namespace TestDrucker.Controllers.PrinterCanon
         {
             return _queueRepository.GetQueue();
         }
-        public int AddId (string PrinterName, string Filename)
+        public int AddQ (string PrinterName, string Filename)
         {
             return _queueRepository.AddQueue(PrinterName, Filename);
         }
@@ -103,7 +104,7 @@ namespace TestDrucker.Controllers.PrinterCanon
             {
                 string folderPath = @"C:\Users\BenOmran\Desktop\savepdf";
                 PrinterList = GetAllItems().ToList();
-
+                
                 var printer = PrinterList.Single(d => d.DeviceName == PrinterName);
 
                 if (printer.DeviceType == "Printer" && printer.DeviceSubtype == "A4")
@@ -112,12 +113,15 @@ namespace TestDrucker.Controllers.PrinterCanon
                     PdfLoadedDocument loadedDocumentA4 = new PdfLoadedDocument(PdfA4);
                     MemoryStream stream = new MemoryStream();
                     loadedDocumentA4.Save(stream);
+                    PdfViewer pdfViewer = new PdfViewer();
 
                     var myUniqueFileName = $@"Test-A4_{Guid.NewGuid()}.pdf";
                     using (var file = new FileStream(Path.Combine(folderPath, myUniqueFileName), FileMode.Create, FileAccess.Write))
                     {
                         stream.WriteTo(file);
-                        AddId(PrinterName, file.Name);
+                        pdfViewer.BindPdf(PdfA4);
+                        pdfViewer.PrintDocument();
+                        AddQ(PrinterName, file.Name);
                     }
                 }
                 else if (printer.DeviceType == "Printer" && printer.DeviceSubtype == "Label")
@@ -126,12 +130,15 @@ namespace TestDrucker.Controllers.PrinterCanon
                     PdfLoadedDocument loadedDocumentLabel = new PdfLoadedDocument(PdfLabel);
                     MemoryStream stream = new MemoryStream();
                     loadedDocumentLabel.Save(stream);
-
+                    PdfViewer pdfViewer = new PdfViewer();
+       
                     var myUniqueFileName = $@"Test-Label-3,9x7,9-inch_{Guid.NewGuid()}.pdf";
                     using (var file = new FileStream(Path.Combine(folderPath, myUniqueFileName), FileMode.Create, FileAccess.Write))
                     {
                         stream.WriteTo(file);
-                        AddId(PrinterName, file.Name);
+                        pdfViewer.BindPdf(PdfLabel);
+                        pdfViewer.PrintDocument();
+                        AddQ(PrinterName, file.Name);
                     }
                 }
             }

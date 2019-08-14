@@ -24,6 +24,7 @@ namespace XUnitTestDrucker
 
         }
 
+        [Fact]
         public void CreateConfiguration()
         {
             var configPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\", "appsettings.json"));
